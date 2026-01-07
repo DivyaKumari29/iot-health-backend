@@ -30,6 +30,27 @@ app.post("/insert", async (req, res) => {
   res.send("OK");
 });
 
+// 🔹 GET latest reading (for cards)
+app.get("/latest", async (req, res) => {
+  try {
+    const latest = await Health.findOne().sort({ time: -1 });
+    res.json(latest);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 GET all readings (for graph + table)
+app.get("/data", async (req, res) => {
+  try {
+    const data = await Health.find().sort({ time: 1 });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 app.get("/", (req, res) => {
   res.send("IoT Cloud is running");
 });
