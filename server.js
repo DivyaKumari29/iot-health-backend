@@ -3,8 +3,11 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const twilio = require("twilio");
 
+let lastEmergencyTime = 0;
+const EMERGENCY_COOLDOWN = 5 * 60 * 1000; // 5 minutes
+
 const accountSid = "AC4b3616b0569318c22468ff27a0ae6b5b";
-const authToken  = "430541b5e1d9862a58e73b38a1603c1b";
+const authToken  = "bbc428935565de58a1271218b47ae2ee";
 
 const client = twilio(accountSid, authToken);
 
@@ -41,18 +44,23 @@ app.post("/insert", async (req, res) => {
 
   await Health.create({ hr, spo2 });
 
-  // 🚨 WHATSAPP ALERT ON EMERGENCY
-  if (spo2 < 90) {
-    await client.messages.create({
-      body:
-        `🚨 EMERGENCY ALERT 🚨\n` +
-        `Heart Rate: ${hr} BPM\n` +
-        `SpO₂ Level: ${spo2}%\n` +
-        `Immediate medical attention required.`,
-      from: FROM_WHATSAPP,
-      to: TO_WHATSAPP
-    });
-  }
+  // 🚨 WHATSAPP ALERT WITH COOLDOWN
+const now = Date.now();
+
+if (spo2 < 90 && (now - lastEmergencyTime > EMERGENCY_COOLDOWN)) {
+  await client.messages.create({
+    body:
+      `🚨 EMERGENCY ALERT 🚨\n` +
+      `Heart Rate: ${hr} BPM\n` +
+      `SpO₂ Level: ${spo2}%\n` +
+      `Immediate medical attention required.`,
+    from: FROM_WHATSAPP,
+    to: TO_WHATSAPP
+  });
+
+  lastEmergencyTime = now;
+}
+
 
   res.send("OK");
 });
