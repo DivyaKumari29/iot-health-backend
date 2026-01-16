@@ -11,6 +11,7 @@ const authToken  = "bbc428935565de58a1271218b47ae2ee";
 
 const client = twilio(accountSid, authToken);
 
+
 // Twilio WhatsApp numbers
 const FROM_WHATSAPP = "whatsapp:+14155238886";   // Twilio sandbox
 const TO_WHATSAPP   = "whatsapp:+919686289935"; // YOUR WhatsApp number
